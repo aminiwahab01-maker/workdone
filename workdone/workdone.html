@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+        
+    <meta charset="UTF-8">
+        
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Work.Done - Owner Dashboard</title>
+        
+    <link rel="stylesheet" href="workdone.css">
+</head>
+
+<body>
+        <div class="auth-screen" id="auth-screen">
+                <div class="auth-box">
+                        <div class="auth-logo">Work.Done</div>
+                        <div class="auth-subtitle">Sign in to manage your tasks</div>
+
+            <!-- Login Form -->
+            <div id="login-form">
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="login-email" placeholder="your@email.com" value="aminiwahab01@gmail.com">
+                </div>
+
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" placeholder="password" value="wahab123456">
+                </div>
+
+                <button class="btn btn-primary" onclick="login()">Sign In</button>
+
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+
+                <button class="btn btn-google" type="button" onclick="loginWithGoogle()">
+                    <span class="google-icon">G</span>
+                    Continue with Google
+                </button>
+
+                <div class="auth-links">
+                    <a href="#" onclick="showRegisterForm()">Create an account</a>
+                </div>
+            </div>
+
+            <!-- Register Form -->
+            <div id="register-form" style="display: none;">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="register-name" placeholder="Your full name">
+                </div>
+
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="register-email" placeholder="your@email.com">
+                </div>
+
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="register-password" placeholder="password (min 6 chars)">
+                </div>
+
+                <button class="btn btn-primary" onclick="register()">Create Account</button>
+
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+
+                <button class="btn btn-google" type="button" onclick="loginWithGoogle()">
+                    <span class="google-icon">G</span>
+                    Continue with Google
+                </button>
+
+                <div class="auth-links">
+                    <a href="#" onclick="showLoginForm()">Already have an account?</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container" id="app-container">
+                <div class="header">
+                        <div class="header-left">
+                                <div class="logo">Work.Done</div>
+                            </div>
+                        
+                        <div class="header-right">
+                                <button class="btn-primary" onclick="openSettings()"
+                    style="width: auto; padding: 12px 20px;">⚙️ Settings</button>
+                                
+                                <div class="profile-section">
+                                        <div class="profile-avatar">
+                                                <img id="header-image"
+                            src="https://ui-avatars.com/api/?name=Owner&background=f59e0b&color=fff" alt="Profile">
+                                            </div>
+                                        <div class="profile-info">
+                                                <div class="profile-name">
+                                                        <span id="header-name">Owner</span>
+                                                        <span class="owner-badge">Owner</span>
+                                                    </div>
+                                                <div class="profile-email" id="header-email">
+                            owner@workdone.app</div>
+                                            </div>
+                                        <button class="logout-btn" onclick="logout()">Logout</button>
+                                    </div>
+                            </div>
+                    </div>
+
+                <div class="sidebar-left">
+                        <div class="current-account-card">
+                                <div class="account-header">
+                                        <div class="account-avatar">
+                                                <img id="account-image"
+                            src="https://ui-avatars.com/api/?name=Owner&background=f59e0b&color=fff"
+                            alt="Current Account">
+                                                <div class="account-status"></div>
+                                            </div>
+                                        <div class="account-details">
+                                                <h2 id="account-name">Owner</h2>
+                                                <div class="account-email">
+                                                        <span>✉️</span>
+                                                        <span id="account-email">owner@workdone.app</span>
+                                                    </div>
+                                            </div>
+                                    </div>
+                                
+                                <div class="account-meta">
+                                        <div class="meta-item">
+                                                <div class="meta-value" id="account-tasks">0</div>
+                                                <div class="meta-label">My Tasks</div>
+                                            </div>
+                                        <div class="meta-item">
+                                                <div class="meta-value" id="account-progress">0%</div>
+                                                <div class="meta-label">Done</div>
+                                            </div>
+                                    </div>
+                                
+                                <div class="account-actions">
+                                        <button class="btn-small btn-manage" onclick="openSettings()">Manage</button>
+                                        <button class="btn-small btn-logout" onclick="logout()">Logout</button>
+                                    </div>
+                            </div>
+
+                        <div class="nav-item active" onclick="setFilter('all')">
+                                <span>📋 All Tasks</span>
+                                <span class="badge" id="count-all">0</span>
+                            </div>
+                        <div class="nav-item" onclick="setFilter('today')">
+                                <span>📅 Today</span>
+                                <span class="badge" id="count-today">0</span>
+                            </div>
+                        <div class="nav-item" onclick="setFilter('upcoming')">
+                                <span>🗓️ Upcoming</span>
+                                <span class="badge" id="count-upcoming">0</span>
+                            </div>
+                        <div class="nav-item" onclick="setFilter('important')">
+                                <span>⭐ Important</span>
+                                <span class="badge" id="count-important">0</span>
+                            </div>
+                        <div class="nav-item" onclick="setFilter('completed')">
+                                <span>✓ Completed</span>
+                            </div>
+
+                        <div class="stats-card">
+                                <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Your
+                    Progress</div>
+                                <div style="font-size: 32px; font-weight: bold;" id="progress-text">0%</div>
+                                <div class="progress-bar">
+                                        <div class="progress-fill" id="progress-bar" style="width: 0%">
+                    </div>
+                                    </div>
+                                <div style="margin-top: 12px; font-size: 13px; color: var(--text-secondary);">
+                                        <span id="completed-count">0</span> completed of <span id="total-count">0</span>
+                    tasks
+                                    </div>
+                                <div class="sync-status">
+                                        <div class="sync-dot"></div>
+                                        <span>Synced</span>
+                                    </div>
+                            </div>
+                    </div>
+
+                <div class="main-content">
+                        <div class="input-area">
+                                <div class="input-row">
+                                        <input type="text" id="task-input" placeholder="What needs to be done?"
+                        style="flex: 1;">
+                                        <button class="btn-primary" onclick="addTask()">+ Add Task</button>
+                                    </div>
+                                <div class="input-row">
+                                        <select id="priority-select" style="padding: 14px;">
+                                                <option value="low">Low Priority</option>
+                                                <option value="medium" selected>Medium Priority</option>
+                                                <option value="high">High Priority</option>
+                                            </select>
+                                        <select id="category-select" style="padding: 14px;">
+                                                <option value="work">💼 Work</option>
+                                                <option value="personal">🏠 Personal</option>
+                                                <option value="learning">📚 Learning</option>
+                                            </select>
+                                        <input type="date" id="date-select" style="padding: 14px;">
+                                    </div>
+                            </div>
+
+                        <div class="filters">
+                                <button class="filter-btn active" onclick="setSubFilter('all')">All</button>
+                                <button class="filter-btn" onclick="setSubFilter('active')">Active</button>
+                                <button class="filter-btn" onclick="setSubFilter('completed')">Completed</button>
+                                <button class="filter-btn" onclick="setSubFilter('high')">High
+                    Priority</button>
+                            </div>
+
+                        <div class="task-list" id="task-list">
+                                <div class="empty-state">
+                                        <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+                                        <div>No tasks yet. Add your first task above!</div>
+                                    </div>
+                            </div>
+                    </div>
+
+                <div class="sidebar-right">
+                        <div class="calendar-container">
+                                <div class="calendar-header">
+                    <div class="calendar-title-section">
+                        <span id="calendar-month"
+                            style="font-weight: 700; font-size: 20px; color: var(--text);">Month</span>
+                        <span id="calendar-year"
+                            style="font-size: 14px; color: var(--text-secondary); margin-left: 8px;">Year</span>
+                    </div>
+                    <div class="calendar-nav">
+                        <button onclick="changeMonth(-1)" title="Previous month">‹</button>
+                        <button onclick="goToToday()" title="Go to today"
+                            style="width: 60px; font-size: 12px;">Today</button>
+                        <button onclick="changeMonth(1)" title="Next month">›</button>
+                                        <div class="calendar-grid" id="calendar-grid"></div>
+                                    
+                    </div>
+
+                                <div
+                        style="background: var(--bg-secondary); padding: 24px; border-radius: 16px; border: 1px solid var(--bg-tertiary);">
+                                        <div style="font-weight: bold; margin-bottom: 16px; font-size: 16px;">📅
+                            Upcoming</div>
+                                        <div id="upcoming-container"></div>
+                                    </div>
+
+                    <div class="weather-widget" id="weather-widget">
+                        <div class="weather-header">
+                            <div class="weather-icon">🌤️</div>
+                            <div class="weather-location">Loading weather...</div>
+                        </div>
+                        <div class="weather-info">
+                            <div class="weather-temp">--°C</div>
+                            <div class="weather-desc">Fetching weather</div>
+                        </div>
+                        <div class="weather-details">
+                            <div class="weather-detail">
+                                <span class="detail-label">Humidity</span>
+                                <span class="detail-value">--%</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span class="detail-label">Wind</span>
+                                <span class="detail-value">-- km/h</span>
+                            </div>
+                        </div>
+                    </div>
+                                    <div>
+                                            <div style="font-weight: bold;">Work AI</div>
+                                            <div style="font-size: 13px; opacity: 0.9;">Your assistant</div>
+                                        </div>
+                                
+                </div>
+                            
+                            <div class="ai-messages" id="ai-messages">
+                    <div class="message ai" id="welcome-message">
+                        Welcome to Work.Done! I'm your AI assistant. I can help you manage tasks, track progress,
+                        and stay
+                        productive. What would you like to know?
+                                    </div>
+
+                                <div class="ai-input-area">
+                                        <input type="text" class="ai-input" id="ai-input"
+                            placeholder="Ask me anything...">
+                                        <button class="ai-send" onclick="sendMessage()">➤</button>
+                                    </div>
+                            
+                </div>
+                    </div>
+
+                <div class="modal-overlay" id="settings-modal">
+                        <div class="modal">
+                                <div class="modal-header">
+                                        <h2>⚙️ Account Settings</h2>
+                                        <button class="close-btn" onclick="closeSettings()">×</button>
+                                    </div>
+                                
+                                <div class="setting-item">
+                                        <label>Display Name</label>
+                                        <input type="text" id="settings-name" value="Owner">
+                                    </div>
+                                
+                                <div class="setting-item">
+                                        <label>Email Address</label>
+                                        <input type="text" id="settings-email" value="owner@workdone.app" readonly
+                            style="color: var(--owner); font-weight: 600;">
+                                    </div>
+
+                                <div
+                        style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--bg-tertiary);">
+                                        <div
+                            style="font-size: 13px; color: var(--text-secondary); margin-bottom: 10px;">
+                            Task
+                            Statistics</div>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                                <div
+                                style="background: var(--bg-tertiary); padding: 15px; border-radius: 10px;">
+                                                        <div style="font-size: 24px; font-weight: bold;"
+                                    id="setting-total">
+                                    0
+                                </div>
+                                                        <div style="font-size: 12px; color: var(--text-secondary);">
+                                    Total
+                                    Tasks
+                                </div>
+                                                    </div>
+                                                <div
+                                style="background: var(--bg-tertiary); padding: 15px; border-radius: 10px;">
+                                                        <div style="font-size: 24px; font-weight: bold;"
+                                    id="setting-completed">
+                                    0</div>
+                                                        <div style="font-size: 12px; color: var(--text-secondary);">
+                                    Completed
+                                </div>
+                                                    </div>
+                                            </div>
+                                    </div>
+
+                                <div
+                        style="margin-top: 20px; padding: 15px; background: rgba(239, 68, 68, 0.1); border-radius: 10px; border: 1px solid rgba(239, 68, 68, 0.3);">
+                                        <button onclick="logout()"
+                            style="background: var(--danger); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: 600;">
+                                                Logout
+                                            </button>
+                                    </div>
+                            </div>
+                    </div>
+
+                
+            <script src="workdone.js"></script>
+</body>
+
+</html>
