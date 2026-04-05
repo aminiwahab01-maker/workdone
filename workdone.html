@@ -1,0 +1,2498 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work.Done - Owner Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1e1e2e;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --owner: #f59e0b;
+            --text: #ffffff;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .auth-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+
+        .auth-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .auth-box {
+            background: var(--bg-secondary);
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid var(--bg-tertiary);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .auth-logo {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .input-group input {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid transparent;
+            color: var(--text);
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            width: 100%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-google {
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-google:hover {
+            background: #f8f9fa;
+            border-color: #ccc;
+        }
+
+        .google-icon {
+            background: #4285f4;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .auth-divider {
+            margin: 20px 0;
+            position: relative;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .auth-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--bg-tertiary);
+        }
+
+        .auth-divider span {
+            background: var(--bg-secondary);
+            padding: 0 15px;
+        }
+
+        .auth-links {
+            margin-top: 20px;
+        }
+
+        .auth-links a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .auth-links a:hover {
+            text-decoration: underline;
+        }
+
+        .owner-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--owner), #f97316);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-left: 10px;
+        }
+
+        .app-container {
+            display: none;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            grid-template-columns: 320px 1fr 300px 350px;
+            gap: 20px;
+        }
+
+        .app-container.active {
+            display: grid;
+        }
+
+        @media (max-width: 1400px) {
+            .app-container {
+                grid-template-columns: 320px 1fr 300px;
+            }
+
+            .ai-panel {
+                display: none;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-left,
+            .sidebar-right {
+                display: none;
+            }
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--bg-tertiary);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .current-account-card {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(99, 102, 241, 0.1));
+            border: 2px solid var(--owner);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .current-account-card::before {
+            content: 'CURRENT ACCOUNT';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--owner);
+            letter-spacing: 1px;
+        }
+
+        .account-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .account-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 3px solid var(--owner);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .account-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .account-status {
+            position: absolute;
+            bottom: 3px;
+            right: 3px;
+            width: 14px;
+            height: 14px;
+            background: var(--success);
+            border-radius: 50%;
+            border: 2px solid var(--bg-secondary);
+        }
+
+        .account-details h2 {
+            font-size: 20px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .account-email {
+            color: var(--text-secondary);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .account-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .meta-item {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .meta-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--owner);
+        }
+
+        .meta-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .account-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-small {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-manage {
+            background: var(--owner);
+            color: white;
+        }
+
+        .btn-logout {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 20px;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .profile-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--owner);
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .profile-name {
+            font-weight: 600;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .profile-email {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .sidebar-left,
+        .sidebar-right {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-item {
+            padding: 14px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: var(--bg-tertiary);
+            color: var(--text);
+            border-color: var(--accent);
+        }
+
+        .nav-item.active {
+            border-left: 4px solid var(--accent);
+        }
+
+        .badge {
+            background: var(--accent);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .stats-card {
+            background: var(--bg-secondary);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--bg-tertiary);
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: var(--bg-tertiary);
+            border-radius: 5px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #8b5cf6);
+            transition: width 0.3s;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-area {
+            background: var(--bg-secondary);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--bg-tertiary);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select {
+            background: var(--bg-tertiary);
+            border: 1px solid transparent;
+            color: var(--text);
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 15px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--bg-tertiary);
+            color: var(--text-secondary);
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .task-item {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid var(--bg-tertiary);
+            transition: all 0.3s;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .task-item:hover {
+            border-color: var(--accent);
+            transform: translateX(5px);
+        }
+
+        .task-item.completed {
+            opacity: 0.6;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+
+        .checkbox {
+            width: 28px;
+            height: 28px;
+            border: 2px solid var(--bg-tertiary);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s;
+        }
+
+        .checkbox:hover {
+            border-color: var(--accent);
+        }
+
+        .checkbox.checked {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-text {
+            font-weight: 500;
+            font-size: 16px;
+            margin-bottom: 6px;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        .tag.high {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .tag.medium {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .tag.low {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .tag.category {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .tag.date {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .delete-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 8px;
+            opacity: 0;
+            transition: all 0.3s;
+            font-size: 18px;
+        }
+
+        .task-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            color: var(--danger);
+            transform: scale(1.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 2px dashed var(--bg-tertiary);
+        }
+
+        .calendar-container {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(255, 255, 255, 0.05) 100%);
+            padding: 24px;
+            border-radius: 20px;
+            border: 1px solid var(--bg-tertiary);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .calendar-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--owner));
+            opacity: 0.8;
+        }
+
+        .calendar-title-section:hover #calendar-month,
+        .calendar-title-section:hover #calendar-year {
+            color: var(--accent);
+            transition: color 0.3s ease;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--bg-tertiary);
+        }
+
+        .calendar-title-section {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .calendar-nav button {
+            background: var(--bg-tertiary);
+            border: none;
+            color: var(--text);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calendar-nav button:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .calendar-nav button:active {
+            transform: translateY(0);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+            }
+
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 8px 24px rgba(99, 102, 241, 0.6);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+            }
+        }
+
+        .calendar-day-header {
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding: 12px 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--bg-tertiary);
+            border: 2px solid transparent;
+        }
+
+        .calendar-day:hover {
+            background: var(--accent);
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.25);
+        }
+
+        .calendar-day.other-month {
+            opacity: 0.4;
+            background: transparent;
+            color: var(--text-secondary);
+        }
+
+        .calendar-day.today {
+            background: linear-gradient(135deg, var(--accent), #7c3aed);
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .calendar-day.selected {
+            background: var(--owner);
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .calendar-day.has-tasks::after {
+            content: '';
+            position: absolute;
+            bottom: 6px;
+            width: 6px;
+            height: 6px;
+            background: linear-gradient(135deg, var(--success), #10b981);
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(16, 185, 129, 0.4);
+        }
+
+        .calendar-day.has-tasks.today::after {
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .task-count {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: var(--error);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 4px;
+            border-radius: 6px;
+            min-width: 12px;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .calendar-day.animate-in {
+            animation: calendarDayFadeIn 0.4s ease-out forwards;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        @keyframes calendarDayFadeIn {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .weather-widget {
+            background: var(--bg-secondary);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--bg-tertiary);
+            margin-bottom: 20px;
+            position: sticky;
+            top: 20px;
+        }
+
+        .weather-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .weather-icon {
+            font-size: 32px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .weather-location {
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--text);
+        }
+
+        .weather-info {
+            margin-bottom: 16px;
+        }
+
+        .weather-temp {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+
+        .weather-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-transform: capitalize;
+        }
+
+        .weather-details {
+            display: flex;
+            gap: 16px;
+        }
+
+        .weather-detail {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .ai-panel {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 140px);
+            position: sticky;
+            top: 20px;
+            border: 1px solid var(--bg-tertiary);
+            overflow: hidden;
+        }
+
+        .ai-header {
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .ai-avatar {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .ai-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 14px 18px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.5;
+            animation: messageSlide 0.3s ease;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: var(--accent);
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.ai {
+            align-self: flex-start;
+            background: var(--bg-tertiary);
+            border-bottom-left-radius: 4px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .message.typing {
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            80%,
+            100% {
+                opacity: 0.3;
+                transform: scale(0.8);
+            }
+
+            40% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .ai-input-area {
+            padding: 20px;
+            border-top: 1px solid var(--bg-tertiary);
+            display: flex;
+            gap: 12px;
+        }
+
+        .ai-input {
+            flex: 1;
+            background: var(--bg-tertiary);
+            border: 1px solid transparent;
+            color: var(--text);
+            padding: 14px 20px;
+            border-radius: 24px;
+            font-size: 14px;
+        }
+
+        .ai-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .ai-send {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .ai-send:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid var(--bg-tertiary);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .setting-item {
+            margin-bottom: 20px;
+        }
+
+        .setting-item label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .setting-item input {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid transparent;
+            color: var(--text);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--success);
+            margin-top: 10px;
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* Calendar responsive styles */
+        @media (max-width: 768px) {
+            .calendar-container {
+                padding: 16px;
+                margin: 0 10px;
+            }
+
+            .calendar-header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: stretch;
+            }
+
+            .calendar-title-section {
+                align-items: center;
+                text-align: center;
+            }
+
+            .calendar-nav {
+                justify-content: center;
+            }
+
+            .calendar-day {
+                font-size: 14px;
+                min-height: 36px;
+            }
+
+            .calendar-day-header {
+                font-size: 12px;
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+        <div class="auth-screen" id="auth-screen">
+                <div class="auth-box">
+                        <div class="auth-logo">Work.Done</div>
+                        <div class="auth-subtitle">Sign in to manage your tasks</div>
+
+            <!-- Login Form -->
+            <div id="login-form">
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="login-email" placeholder="your@email.com" value="aminiwahab01@gmail.com">
+                </div>
+
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" placeholder="password" value="wahab123456">
+                </div>
+
+                <button class="btn btn-primary" onclick="login()">Sign In</button>
+
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+
+                <button class="btn btn-google" type="button" onclick="loginWithGoogle()">
+                    <span class="google-icon">G</span>
+                    Continue with Google
+                </button>
+
+                <div class="auth-links">
+                    <a href="#" onclick="showRegisterForm()">Create an account</a>
+                </div>
+            </div>
+
+            <!-- Register Form -->
+            <div id="register-form" style="display: none;">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="register-name" placeholder="Your full name">
+                </div>
+
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="register-email" placeholder="your@email.com">
+                </div>
+
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="register-password" placeholder="password (min 6 chars)">
+                </div>
+
+                <button class="btn btn-primary" onclick="register()">Create Account</button>
+
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+
+                <button class="btn btn-google" type="button" onclick="loginWithGoogle()">
+                    <span class="google-icon">G</span>
+                    Continue with Google
+                </button>
+
+                <div class="auth-links">
+                    <a href="#" onclick="showLoginForm()">Already have an account?</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container" id="app-container">
+                <div class="header">
+                        <div class="header-left">
+                                <div class="logo">Work.Done</div>
+                            </div>
+                        
+                        <div class="header-right">
+                                <button class="btn-primary" onclick="openSettings()"
+                    style="width: auto; padding: 12px 20px;">⚙️ Settings</button>
+                                
+                                <div class="profile-section">
+                                        <div class="profile-avatar">
+                                                <img id="header-image"
+                            src="https://ui-avatars.com/api/?name=Owner&background=f59e0b&color=fff" alt="Profile">
+                                            </div>
+                                        <div class="profile-info">
+                                                <div class="profile-name">
+                                                        <span id="header-name">Owner</span>
+                                                        <span class="owner-badge">Owner</span>
+                                                    </div>
+                                                <div class="profile-email" id="header-email">
+                            owner@workdone.app</div>
+                                            </div>
+                                        <button class="logout-btn" onclick="logout()">Logout</button>
+                                    </div>
+                            </div>
+                    </div>
+
+                <div class="sidebar-left">
+                        <div class="current-account-card">
+                                <div class="account-header">
+                                        <div class="account-avatar">
+                                                <img id="account-image"
+                            src="https://ui-avatars.com/api/?name=Owner&background=f59e0b&color=fff"
+                            alt="Current Account">
+                                                <div class="account-status"></div>
+                                            </div>
+                                        <div class="account-details">
+                                                <h2 id="account-name">Owner</h2>
+                                                <div class="account-email">
+                                                        <span>✉️</span>
+                                                        <span id="account-email">owner@workdone.app</span>
+                                                    </div>
+                                            </div>
+                                    </div>
+                                
+                                <div class="account-meta">
+                                        <div class="meta-item">
+                                                <div class="meta-value" id="account-tasks">0</div>
+                                                <div class="meta-label">My Tasks</div>
+                                            </div>
+                                        <div class="meta-item">
+                                                <div class="meta-value" id="account-progress">0%</div>
+                                                <div class="meta-label">Done</div>
+                                            </div>
+                                    </div>
+                                
+                                <div class="account-actions">
+                                        <button class="btn-small btn-manage" onclick="openSettings()">Manage</button>
+                                        <button class="btn-small btn-logout" onclick="logout()">Logout</button>
+                                    </div>
+                            </div>
+
+                        <div class="nav-item active" onclick="setFilter('all')">
+                                <span>📋 All Tasks</span>
+                                <span class="badge" id="count-all">0</span>
+                            </div>
+                        <div class="nav-item" onclick="setFilter('today')">
+                                <span>📅 Today</span>
+                                <span class="badge" id="count-today">0</span>
+                            </div>
+                        <div class="nav-item" onclick="setFilter('upcoming')">
+                                <span>🗓️ Upcoming</span>
+                                <span class="badge" id="count-upcoming">0</span>
+                            </div>
+                        <div class="nav-item" onclick="setFilter('important')">
+                                <span>⭐ Important</span>
+                                <span class="badge" id="count-important">0</span>
+                            </div>
+                        <div class="nav-item" onclick="setFilter('completed')">
+                                <span>✓ Completed</span>
+                            </div>
+
+                        <div class="stats-card">
+                                <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Your
+                    Progress</div>
+                                <div style="font-size: 32px; font-weight: bold;" id="progress-text">0%</div>
+                                <div class="progress-bar">
+                                        <div class="progress-fill" id="progress-bar" style="width: 0%">
+                    </div>
+                                    </div>
+                                <div style="margin-top: 12px; font-size: 13px; color: var(--text-secondary);">
+                                        <span id="completed-count">0</span> completed of <span id="total-count">0</span>
+                    tasks
+                                    </div>
+                                <div class="sync-status">
+                                        <div class="sync-dot"></div>
+                                        <span>Synced</span>
+                                    </div>
+                            </div>
+                    </div>
+
+                <div class="main-content">
+                        <div class="input-area">
+                                <div class="input-row">
+                                        <input type="text" id="task-input" placeholder="What needs to be done?"
+                        style="flex: 1;">
+                                        <button class="btn-primary" onclick="addTask()">+ Add Task</button>
+                                    </div>
+                                <div class="input-row">
+                                        <select id="priority-select" style="padding: 14px;">
+                                                <option value="low">Low Priority</option>
+                                                <option value="medium" selected>Medium Priority</option>
+                                                <option value="high">High Priority</option>
+                                            </select>
+                                        <select id="category-select" style="padding: 14px;">
+                                                <option value="work">💼 Work</option>
+                                                <option value="personal">🏠 Personal</option>
+                                                <option value="learning">📚 Learning</option>
+                                            </select>
+                                        <input type="date" id="date-select" style="padding: 14px;">
+                                    </div>
+                            </div>
+
+                        <div class="filters">
+                                <button class="filter-btn active" onclick="setSubFilter('all')">All</button>
+                                <button class="filter-btn" onclick="setSubFilter('active')">Active</button>
+                                <button class="filter-btn" onclick="setSubFilter('completed')">Completed</button>
+                                <button class="filter-btn" onclick="setSubFilter('high')">High
+                    Priority</button>
+                            </div>
+
+                        <div class="task-list" id="task-list">
+                                <div class="empty-state">
+                                        <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+                                        <div>No tasks yet. Add your first task above!</div>
+                                    </div>
+                            </div>
+                    </div>
+
+                <div class="sidebar-right">
+                        <div class="calendar-container">
+                                <div class="calendar-header">
+                    <div class="calendar-title-section">
+                        <span id="calendar-month"
+                            style="font-weight: 700; font-size: 20px; color: var(--text);">Month</span>
+                        <span id="calendar-year"
+                            style="font-size: 14px; color: var(--text-secondary); margin-left: 8px;">Year</span>
+                    </div>
+                    <div class="calendar-nav">
+                        <button onclick="changeMonth(-1)" title="Previous month">‹</button>
+                        <button onclick="goToToday()" title="Go to today"
+                            style="width: 60px; font-size: 12px;">Today</button>
+                        <button onclick="changeMonth(1)" title="Next month">›</button>
+                                        <div class="calendar-grid" id="calendar-grid"></div>
+                                    
+                    </div>
+
+                                <div
+                        style="background: var(--bg-secondary); padding: 24px; border-radius: 16px; border: 1px solid var(--bg-tertiary);">
+                                        <div style="font-weight: bold; margin-bottom: 16px; font-size: 16px;">📅
+                            Upcoming</div>
+                                        <div id="upcoming-container"></div>
+                                    </div>
+
+                    <div class="weather-widget" id="weather-widget">
+                        <div class="weather-header">
+                            <div class="weather-icon">🌤️</div>
+                            <div class="weather-location">Loading weather...</div>
+                        </div>
+                        <div class="weather-info">
+                            <div class="weather-temp">--°C</div>
+                            <div class="weather-desc">Fetching weather</div>
+                        </div>
+                        <div class="weather-details">
+                            <div class="weather-detail">
+                                <span class="detail-label">Humidity</span>
+                                <span class="detail-value">--%</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span class="detail-label">Wind</span>
+                                <span class="detail-value">-- km/h</span>
+                            </div>
+                        </div>
+                    </div>
+                                    <div>
+                                            <div style="font-weight: bold;">Work AI</div>
+                                            <div style="font-size: 13px; opacity: 0.9;">Your assistant</div>
+                                        </div>
+                                
+                </div>
+                            
+                            <div class="ai-messages" id="ai-messages">
+                    <div class="message ai" id="welcome-message">
+                        Welcome to Work.Done! I'm your AI assistant. I can help you manage tasks, track progress,
+                        and stay
+                        productive. What would you like to know?
+                                    </div>
+
+                                <div class="ai-input-area">
+                                        <input type="text" class="ai-input" id="ai-input"
+                            placeholder="Ask me anything...">
+                                        <button class="ai-send" onclick="sendMessage()">➤</button>
+                                    </div>
+                            
+                </div>
+                    </div>
+
+                <div class="modal-overlay" id="settings-modal">
+                        <div class="modal">
+                                <div class="modal-header">
+                                        <h2>⚙️ Account Settings</h2>
+                                        <button class="close-btn" onclick="closeSettings()">×</button>
+                                    </div>
+                                
+                                <div class="setting-item">
+                                        <label>Display Name</label>
+                                        <input type="text" id="settings-name" value="Owner">
+                                    </div>
+                                
+                                <div class="setting-item">
+                                        <label>Email Address</label>
+                                        <input type="text" id="settings-email" value="owner@workdone.app" readonly
+                            style="color: var(--owner); font-weight: 600;">
+                                    </div>
+
+                                <div
+                        style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--bg-tertiary);">
+                                        <div
+                            style="font-size: 13px; color: var(--text-secondary); margin-bottom: 10px;">
+                            Task
+                            Statistics</div>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                                <div
+                                style="background: var(--bg-tertiary); padding: 15px; border-radius: 10px;">
+                                                        <div style="font-size: 24px; font-weight: bold;"
+                                    id="setting-total">
+                                    0
+                                </div>
+                                                        <div style="font-size: 12px; color: var(--text-secondary);">
+                                    Total
+                                    Tasks
+                                </div>
+                                                    </div>
+                                                <div
+                                style="background: var(--bg-tertiary); padding: 15px; border-radius: 10px;">
+                                                        <div style="font-size: 24px; font-weight: bold;"
+                                    id="setting-completed">
+                                    0</div>
+                                                        <div style="font-size: 12px; color: var(--text-secondary);">
+                                    Completed
+                                </div>
+                                                    </div>
+                                            </div>
+                                    </div>
+
+                                <div
+                        style="margin-top: 20px; padding: 15px; background: rgba(239, 68, 68, 0.1); border-radius: 10px; border: 1px solid rgba(239, 68, 68, 0.3);">
+                                        <button onclick="logout()"
+                            style="background: var(--danger); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: 600;">
+                                                Logout
+                                            </button>
+                                    </div>
+                            </div>
+                    </div>
+
+                
+            <script>
+                const GOOGLE_CLIENT_ID = '453836583217-1csq1g9rsfopb4fl48hpog58t0qmaje4.apps.googleusercontent.com';
+
+                let currentUser = null;
+                let users = JSON.parse(localStorage.getItem('workdone_users')) || [
+                    {
+                        id: 'owner_001',
+                        name: 'Wahab',
+                        email: 'aminiwahab01@gmail.com',
+                        password: 'wahab123456',
+                        avatar: '👑',
+                        provider: 'local',
+                        createdAt: new Date().toISOString()
+                    }
+                ];
+                let tasks = [];
+                let currentFilter = 'all';
+                let subFilter = 'all';
+                let selectedDate = null;
+                let currentMonth = new Date();
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    document.getElementById('date-select').valueAsDate = new Date();
+                    checkAuthState();
+                });
+
+                function checkAuthState() {
+                    const savedUser = localStorage.getItem('workdone_current_user');
+                    if (savedUser) {
+                        currentUser = JSON.parse(savedUser);
+                        loadUserTasks();
+                        showApp();
+                    } else {
+                        showAuth();
+                    }
+                }
+
+                function showAuth() {
+                    document.getElementById('auth-screen').classList.remove('hidden');
+                    document.getElementById('app-container').classList.remove('active');
+                }
+
+                function showApp() {
+                    document.getElementById('auth-screen').classList.add('hidden');
+                    document.getElementById('app-container').classList.add('active');
+                    renderAll();
+                    updateUserDisplay();
+                    setTimeout(() => {
+                        const welcomeMessage = document.getElementById('welcome-message');
+                        if (welcomeMessage) {
+                            welcomeMessage.innerHTML = `Welcome back, ${currentUser.name}! ${currentUser.avatar} I'm your AI assistant. I can help you manage tasks, track progress, and stay productive. You have ${tasks.filter(t => !t.completed).length} pending tasks. What would you like to do today?`;
+                        } else {
+                            addMessage(`Welcome back, ${currentUser.name}! ${currentUser.avatar} I'm your AI assistant. I can help you manage tasks, track progress, and stay productive. You have ${tasks.filter(t => !t.completed).length} pending tasks. What would you like to do today?`, 'ai');
+                        }
+                    }, 500);
+                }
+
+                function loadUserTasks() {
+                    tasks = JSON.parse(localStorage.getItem(`workdone_tasks_${currentUser.id}`)) || [];
+                }
+
+                function saveUserTasks() {
+                    localStorage.setItem(`workdone_tasks_${currentUser.id}`, JSON.stringify(tasks));
+                }
+
+                function updateUserDisplay() {
+                    if (currentUser) {
+                        document.getElementById('account-name').textContent = currentUser.name;
+                        document.getElementById('account-email').textContent = currentUser.email;
+                        document.getElementById('account-avatar').textContent = currentUser.avatar;
+                        document.getElementById('account-tasks').textContent = tasks.filter(t => !t.completed).length;
+                        document.getElementById('account-progress').textContent = tasks.length > 0 ? Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) + '%' : '0%';
+                    }
+                }
+
+                function login() {
+                    console.log('Login function called');
+                    const email = document.getElementById('login-email').value.trim();
+                    const password = document.getElementById('login-password').value;
+                    console.log('Login attempt with email:', email);
+
+                    if (!email || !password) {
+                        alert('Please enter your email and password');
+                        return;
+                    }
+
+                    console.log('Available users:', users);
+                    const user = users.find(u => u.email === email && u.password === password);
+                    console.log('User found:', user);
+
+                    if (!user) {
+                        alert('Invalid credentials. This is a private app for personal use only.');
+                        return;
+                    }
+
+                    currentUser = user;
+                    localStorage.setItem('workdone_current_user', JSON.stringify(user));
+                    loadUserTasks();
+                    console.log('Calling showApp...');
+                    showApp();
+                }
+
+                function loginWithGoogle() {
+                    console.log('🔵 Google login clicked - Function executed!');
+                    console.log('ℹ️ Using Google client ID:', GOOGLE_CLIENT_ID);
+                    localStorage.setItem('debug_google_click', 'clicked_' + Date.now());
+                    alert('✅ Google Sign-In Clicked! Client ID: ' + GOOGLE_CLIENT_ID + '\nCheck console (F12) for details.');
+
+                    try {
+                        // Simulate Google OAuth
+                        const googleUsers = [
+                            { name: 'John Doe', email: 'john.doe@gmail.com', avatar: '👨' },
+                            { name: 'Jane Smith', email: 'jane.smith@gmail.com', avatar: '👩' },
+                            { name: 'Alex Johnson', email: 'alex.johnson@gmail.com', avatar: '🧑' }
+                        ];
+
+                        // Simulate OAuth popup
+                        const randomUser = googleUsers[Math.floor(Math.random() * googleUsers.length)];
+                        console.log('Selected Google user:', randomUser);
+
+                        let user = users.find(u => u.email === randomUser.email);
+
+                        if (!user) {
+                            // Create new user if they don't exist
+                            user = {
+                                id: 'google_' + Date.now(),
+                                name: randomUser.name,
+                                email: randomUser.email,
+                                avatar: randomUser.avatar,
+                                provider: 'google',
+                                createdAt: new Date().toISOString()
+                            };
+                            users.push(user);
+                            localStorage.setItem('workdone_users', JSON.stringify(users));
+                            console.log('New Google user created:', user);
+                        }
+
+                        currentUser = user;
+                        localStorage.setItem('workdone_current_user', JSON.stringify(user));
+                        console.log('Google user logged in:', currentUser);
+
+                        loadUserTasks();
+                        console.log('Tasks loaded, showing app...');
+                        showApp();
+
+                        alert('✅ Welcome ' + user.name + '! You are now logged in.');
+                    } catch (error) {
+                        console.error('❌ Error in Google login:', error);
+                        alert('❌ Error: ' + error.message);
+                    }
+                }
+
+                function register() {
+                    console.log('🔵 Register function called');
+                    alert('Creating account...');
+
+                    const name = document.getElementById('register-name').value.trim();
+                    const email = document.getElementById('register-email').value.trim();
+                    const password = document.getElementById('register-password').value;
+
+                    console.log('Register inputs:', { name, email, password });
+
+                    if (!name || !email || !password) {
+                        alert('❌ Please fill in all fields');
+                        return;
+                    }
+
+                    if (password.length < 6) {
+                        alert('❌ Password must be at least 6 characters long');
+                        return;
+                    }
+
+                    if (users.some(u => u.email === email)) {
+                        alert('❌ An account with this email already exists');
+                        return;
+                    }
+
+                    const newUser = {
+                        id: 'local_' + Date.now(),
+                        name: name,
+                        email: email,
+                        password: password,
+                        avatar: '👤',
+                        provider: 'local',
+                        createdAt: new Date().toISOString()
+                    };
+
+                    console.log('Creating new user:', newUser);
+                    users.push(newUser);
+                    localStorage.setItem('workdone_users', JSON.stringify(users));
+
+                    currentUser = newUser;
+                    localStorage.setItem('workdone_current_user', JSON.stringify(newUser));
+                    console.log('User saved, loading tasks...');
+                    loadUserTasks();
+                    console.log('Showing app...');
+                    showApp();
+                    alert('✅ Account created! Welcome ' + name + '!');
+                }
+
+                function logout() {
+                    saveUserTasks();
+                    currentUser = null;
+                    tasks = [];
+                    localStorage.removeItem('workdone_current_user');
+                    showAuth();
+                }
+
+                function showRegisterForm() {
+                    document.getElementById('login-form').style.display = 'none';
+                    document.getElementById('register-form').style.display = 'block';
+                }
+
+                function showLoginForm() {
+                    document.getElementById('register-form').style.display = 'none';
+                    document.getElementById('login-form').style.display = 'block';
+                }
+
+
+                function openSettings() {
+                    document.getElementById('setting-total').textContent = tasks.length;
+                    document.getElementById('setting-completed').textContent = tasks.filter(t => t.completed).length;
+                    document.getElementById('settings-modal').classList.add('active');
+                }
+
+                function closeSettings() {
+                    document.getElementById('settings-modal').classList.remove('active');
+                }
+
+                function addTask() {
+                    const input = document.getElementById('task-input');
+                    const text = input.value.trim();
+                    if (!text) return;
+
+                    const task = {
+                        id: Date.now(),
+                        text: text,
+                        priority: document.getElementById('priority-select').value,
+                        category: document.getElementById('category-select').value,
+                        dueDate: document.getElementById('date-select').value,
+                        completed: false,
+                        createdAt: new Date().toISOString(),
+                        userId: currentUser.id
+                    };
+
+                    tasks.unshift(task);
+                    saveTasks();
+                    input.value = '';
+                    renderAll();
+
+                    const pending = tasks.filter(t => !t.completed).length;
+                    if (pending > 3) {
+                        setTimeout(() => {
+                            addMessage(`Hey ${currentUser.name}, you now have ${pending} pending tasks. Want me to help prioritize?`, 'ai');
+                        }, 800);
+                    }
+                }
+
+                function toggleTask(id) {
+                    const task = tasks.find(t => t.id === id);
+                    if (task) {
+                        task.completed = !task.completed;
+                        saveTasks();
+                        renderAll();
+
+                        if (task.completed) {
+                            const pending = tasks.filter(t => !t.completed).length;
+                            const messages = [
+                                `Great job, ${currentUser.name}! 🎉`,
+                                `Another one down! Keep it up! 💪`,
+                                `You're on fire today! 🔥`,
+                                `Excellent work, Owner! 👑`
+                            ];
+                            setTimeout(() => addMessage(messages[Math.floor(Math.random() * messages.length)], 'ai'), 500);
+
+                            if (pending === 0) {
+                                setTimeout(() => addMessage(`🎊 INCREDIBLE! All tasks completed! You're a productivity master, ${currentUser.name}!`, 'ai'), 1000);
+                            }
+                        }
+                    }
+                }
+
+                function deleteTask(id) {
+                    if (confirm('Delete this task?')) {
+                        tasks = tasks.filter(t => t.id !== id);
+                        saveTasks();
+                        renderAll();
+                    }
+                }
+
+                function saveTasks() {
+                    saveUserTasks();
+                }
+
+                function renderAll() {
+                    renderTasks();
+                    renderCalendar();
+                    renderUpcoming();
+                    updateStats();
+                    updateAccountStats();
+                }
+
+                function renderTasks() {
+                    const container = document.getElementById('task-list');
+                    let filtered = tasks;
+
+                    if (currentFilter === 'today') {
+                        const today = formatDate(new Date());
+                        filtered = tasks.filter(t => t.dueDate === today || (!t.dueDate && isToday(t.createdAt)));
+                    } else if (currentFilter === 'upcoming') {
+                        const today = formatDate(new Date());
+                        filtered = tasks.filter(t => !t.completed && t.dueDate && t.dueDate >= today);
+                    } else if (currentFilter === 'important') {
+                        filtered = tasks.filter(t => t.priority === 'high' && !t.completed);
+                    } else if (currentFilter === 'completed') {
+                        filtered = tasks.filter(t => t.completed);
+                    } else if (currentFilter === 'date' && selectedDate) {
+                        filtered = tasks.filter(t => t.dueDate === selectedDate);
+                    }
+
+                    if (subFilter === 'active') filtered = filtered.filter(t => !t.completed);
+                    if (subFilter === 'completed') filtered = filtered.filter(t => t.completed);
+                    if (subFilter === 'high') filtered = filtered.filter(t => t.priority === 'high');
+
+                    if (filtered.length === 0) {
+                        container.innerHTML = `
+            <div class="empty-state">
+                <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+                <div>No tasks found</div>
+                <div style="font-size: 14px; margin-top: 8px; opacity: 0.7;">Add a task to get started, ${currentUser.name}</div>
+            </div>
+        `;
+                        return;
+                    }
+
+                    container.innerHTML = filtered.map(task => `
+        <div class="task-item ${task.completed ? 'completed' : ''}">
+            <div class="checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})">
+                ${task.completed ? '✓' : ''}
+            </div>
+            <div class="task-content">
+                <div class="task-text">${escapeHtml(task.text)}</div>
+                <div class="task-meta">
+                    <span class="tag ${task.priority}">${task.priority}</span>
+                    <span class="tag category">${task.category}</span>
+                    ${task.dueDate ? `<span class="tag date">${formatDisplayDate(task.dueDate)}</span>` : ''}
+                </div>
+            </div>
+            <button class="delete-btn" onclick="deleteTask(${task.id})">🗑️</button>
+        </div>
+    `).join('');
+                }
+
+                function renderCalendar() {
+                    const year = currentMonth.getFullYear();
+                    const month = currentMonth.getMonth();
+                    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+
+                    document.getElementById('calendar-month').textContent = monthNames[month];
+                    document.getElementById('calendar-year').textContent = year;
+
+                    const firstDay = new Date(year, month, 1).getDay();
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                    const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+                    const grid = document.getElementById('calendar-grid');
+                    grid.innerHTML = '';
+
+                    // Add day headers with better styling
+                    ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(day => {
+                        grid.innerHTML += `<div class="calendar-day-header">${day}</div>`;
+                    });
+
+                    const today = formatDate(new Date());
+                    const userTasks = tasks.filter(t => !t.completed);
+
+                    // Add current month days
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const dateStr = formatDate(new Date(year, month, day));
+                        const isToday = dateStr === today;
+                        const isSelected = dateStr === selectedDate;
+                        const dayTasks = userTasks.filter(t => t.dueDate === dateStr);
+                        const hasTasks = dayTasks.length > 0;
+                        const taskCount = dayTasks.length;
+
+                        let classes = 'calendar-day';
+                        if (isToday) classes += ' today';
+                        if (isSelected) classes += ' selected';
+                        if (hasTasks) classes += ' has-tasks';
+
+                        // Add task count indicator for days with multiple tasks
+                        const taskIndicator = taskCount > 1 ? `<span class="task-count">${taskCount}</span>` : '';
+
+                        grid.innerHTML += `<div class="${classes}" onclick="selectDate('${dateStr}')" title="${hasTasks ? `${taskCount} task${taskCount > 1 ? 's' : ''} due` : ''}">${day}${taskIndicator}</div>`;
+                    }
+
+                    // Add next month days
+                    const remaining = 42 - (firstDay + daysInMonth);
+                    for (let day = 1; day <= remaining; day++) {
+                        grid.innerHTML += `<div class="calendar-day other-month">${day}</div>`;
+                    }
+
+                    // Add smooth animation to calendar days
+                    setTimeout(() => {
+                        const calendarDays = grid.querySelectorAll('.calendar-day');
+                        calendarDays.forEach((day, index) => {
+                            day.style.animationDelay = `${index * 10}ms`;
+                            day.classList.add('animate-in');
+                        });
+                    }, 50);
+                }
+
+                function renderUpcoming() {
+                    const upcoming = tasks
+                        .filter(t => !t.completed && t.dueDate)
+                        .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+                        .slice(0, 5);
+
+                    const container = document.getElementById('upcoming-container');
+                    if (upcoming.length === 0) {
+                        container.innerHTML = '<div style="color: var(--text-secondary); font-size: 14px;">No upcoming tasks</div>';
+                        return;
+                    }
+
+                    container.innerHTML = upcoming.map(task => {
+                        const date = new Date(task.dueDate);
+                        const diff = Math.ceil((date - new Date()) / (1000 * 60 * 60 * 24));
+                        let dateText = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `${date.getMonth() + 1}/${date.getDate()}`;
+
+                        return `
+            <div style="padding: 12px; margin-bottom: 10px; background: var(--bg-tertiary); border-radius: 10px; border-left: 3px solid var(--accent); cursor: pointer;" onclick="selectDate('${task.dueDate}')">
+                <div style="font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 4px;">${dateText}</div>
+                <div style="font-size: 14px;">${escapeHtml(task.text)}</div>
+            </div>
+        `;
+                    }).join('');
+                }
+
+                function updateStats() {
+                    const total = tasks.length;
+                    const completed = tasks.filter(t => t.completed).length;
+                    const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+                    document.getElementById('progress-text').textContent = percent + '%';
+                    document.getElementById('progress-bar').style.width = percent + '%';
+                    document.getElementById('completed-count').textContent = completed;
+                    document.getElementById('total-count').textContent = total;
+
+                    document.getElementById('count-all').textContent = tasks.filter(t => !t.completed).length;
+                    document.getElementById('count-today').textContent = tasks.filter(t => {
+                        const today = formatDate(new Date());
+                        return (t.dueDate === today || (!t.dueDate && isToday(t.createdAt))) && !t.completed;
+                    }).length;
+                    document.getElementById('count-upcoming').textContent = tasks.filter(t => {
+                        const today = formatDate(new Date());
+                        return !t.completed && t.dueDate && t.dueDate > today;
+                    }).length;
+                    document.getElementById('count-important').textContent = tasks.filter(t => t.priority === 'high' && !t.completed).length;
+                }
+
+                function updateAccountStats() {
+                    const total = tasks.length;
+                    const completed = tasks.filter(t => t.completed).length;
+                    const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+                    document.getElementById('account-tasks').textContent = total;
+                    document.getElementById('account-progress').textContent = percent + '%';
+                }
+
+                function sendMessage() {
+                    const input = document.getElementById('ai-input');
+                    const text = input.value.trim();
+                    if (!text) return;
+
+                    addMessage(text, 'user');
+                    input.value = '';
+
+                    // Show typing indicator
+                    showTypingIndicator();
+
+                    setTimeout(() => {
+                        hideTypingIndicator();
+                        const response = generateAIResponse(text);
+                        addMessage(response, 'ai');
+                    }, 1000 + Math.random() * 1000); // Random delay between 1-2 seconds
+                }
+
+                function showTypingIndicator() {
+                    const messages = document.getElementById('ai-messages');
+                    const typingDiv = document.createElement('div');
+                    typingDiv.className = 'message ai-message typing';
+                    typingDiv.id = 'typing-indicator';
+                    typingDiv.innerHTML = `
+        <div class="typing-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    `;
+                    messages.appendChild(typingDiv);
+                    messages.scrollTop = messages.scrollHeight;
+                }
+
+                function hideTypingIndicator() {
+                    const typingDiv = document.getElementById('typing-indicator');
+                    if (typingDiv) {
+                        typingDiv.remove();
+                    }
+                }
+
+                function addMessage(text, sender) {
+                    const container = document.getElementById('ai-messages');
+                    const msg = document.createElement('div');
+                    msg.className = `message ${sender}`;
+                    msg.textContent = text;
+                    container.appendChild(msg);
+                    container.scrollTop = container.scrollHeight;
+                }
+
+                function generateAIResponse(input) {
+                    const lower = input.toLowerCase();
+                    const pendingTasks = tasks.filter(t => !t.completed);
+                    const completedTasks = tasks.filter(t => t.completed);
+                    const highPriorityTasks = tasks.filter(t => t.priority === 'high' && !t.completed);
+                    const todayTasks = tasks.filter(t => {
+                        const today = formatDate(new Date());
+                        return t.dueDate === today && !t.completed;
+                    });
+
+                    // Greetings
+                    if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
+                        const timeOfDay = new Date().getHours();
+                        let greeting = 'Hello';
+                        if (timeOfDay < 12) greeting = 'Good morning';
+                        else if (timeOfDay < 17) greeting = 'Good afternoon';
+                        else greeting = 'Good evening';
+
+                        return `${greeting}, ${currentUser.name}! 👋 Ready to tackle your tasks today?`;
+                    }
+
+                    // Account information
+                    if (lower.includes('my email') || lower.includes('what is my email') || lower.includes('email')) {
+                        return `Your email is ${currentUser.email} 📧`;
+                    }
+
+                    if (lower.includes('who am i') || lower.includes('my name') || lower.includes('name')) {
+                        return `You're ${currentUser.name}, the owner of this workspace! 👑`;
+                    }
+
+                    if (lower.includes('my account') || lower.includes('current account') || lower.includes('account')) {
+                        return `You're signed in as ${currentUser.name} (${currentUser.email}). You have ${pendingTasks.length} pending tasks and ${completedTasks.length} completed tasks. 📊`;
+                    }
+
+                    // Task statistics
+                    if (lower.includes('how many tasks') || lower.includes('my tasks') || lower.includes('task count')) {
+                        if (pendingTasks.length === 0) {
+                            return `You have no pending tasks! 🎉 You're all caught up, ${currentUser.name}!`;
+                        }
+                        return `You have ${pendingTasks.length} pending tasks and ${completedTasks.length} completed tasks, ${currentUser.name}. Keep up the great work! 📋`;
+                    }
+
+                    if (lower.includes('progress') || lower.includes('how am i doing')) {
+                        const total = tasks.length;
+                        const percent = total === 0 ? 0 : Math.round((completedTasks.length / total) * 100);
+                        if (percent === 100) {
+                            return `Amazing! You've completed all ${total} tasks! 🏆 You're a productivity superstar, ${currentUser.name}!`;
+                        }
+                        return `You're ${percent}% done with ${completedTasks.length} out of ${total} tasks completed. ${pendingTasks.length} tasks remaining. Keep pushing! 💪`;
+                    }
+
+                    // Priority and planning
+                    if (lower.includes('prioritize') || lower.includes('what should i do') || lower.includes('priority')) {
+                        if (highPriorityTasks.length > 0) {
+                            return `You have ${highPriorityTasks.length} high priority tasks that need attention, ${currentUser.name}. Focus on those first! 🎯`;
+                        }
+                        if (todayTasks.length > 0) {
+                            return `You have ${todayTasks.length} tasks due today. Start with those! 📅`;
+                        }
+                        if (pendingTasks.length > 0) {
+                            return `You have ${pendingTasks.length} pending tasks. Pick one that will make the biggest impact today! 🚀`;
+                        }
+                        return `No urgent tasks right now! Take a moment to plan your next goals or enjoy some well-deserved rest. 🎉`;
+                    }
+
+                    // Time-based queries
+                    if (lower.includes('today') || lower.includes('due today')) {
+                        if (todayTasks.length === 0) {
+                            return `No tasks due today! 🎯 You can focus on upcoming tasks or plan for tomorrow.`;
+                        }
+                        return `You have ${todayTasks.length} task${todayTasks.length > 1 ? 's' : ''} due today. Make sure to tackle ${todayTasks.length > 1 ? 'them' : 'it'}! 📅`;
+                    }
+
+                    if (lower.includes('upcoming') || lower.includes('future') || lower.includes('next')) {
+                        const upcomingTasks = tasks.filter(t => {
+                            const today = formatDate(new Date());
+                            return t.dueDate && t.dueDate > today && !t.completed;
+                        });
+                        if (upcomingTasks.length === 0) {
+                            return `No upcoming tasks scheduled. Great time to plan ahead! 📅`;
+                        }
+                        return `You have ${upcomingTasks.length} upcoming task${upcomingTasks.length > 1 ? 's' : ''}. The next one is due ${formatDisplayDate(upcomingTasks[0].dueDate)}. 📋`;
+                    }
+
+                    // Productivity tips
+                    if (lower.includes('tip') || lower.includes('advice') || lower.includes('help me') || lower.includes('how to')) {
+                        const tips = [
+                            `Break large tasks into smaller, manageable steps. You'll feel accomplished with each completion! 🎯`,
+                            `Use the Pomodoro technique: 25 minutes of focused work, then a 5-minute break. 🍅`,
+                            `Start your day with your most important task - you'll build momentum! ⚡`,
+                            `Review your completed tasks at the end of each day to celebrate your progress! 🎉`,
+                            `Set specific, achievable goals for each day to stay motivated! 📈`,
+                            `Take regular breaks to maintain focus and avoid burnout. 🌱`,
+                            `Prioritize tasks by both urgency and importance using the Eisenhower Matrix! 📊`
+                        ];
+                        return tips[Math.floor(Math.random() * tips.length)];
+                    }
+
+                    // Motivation
+                    if (lower.includes('motivate') || lower.includes('encourage') || lower.includes('stuck')) {
+                        const motivations = [
+                            `Remember why you started! Every completed task brings you closer to your goals. 💪`,
+                            `You've got this! Even the smallest step forward is progress. 🚀`,
+                            `Be proud of how far you've come. You're building something amazing! 🌟`,
+                            `One task at a time. Focus on the present moment and the rest will follow. 🎯`,
+                            `Your future self will thank you for the work you're doing today! 🙏`
+                        ];
+                        return motivations[Math.floor(Math.random() * motivations.length)];
+                    }
+
+                    // Task management help
+                    if (lower.includes('add task') || lower.includes('create task') || lower.includes('new task')) {
+                        return `To add a task, use the input field at the top of the main content area. You can set priority, category, and due date! ➕`;
+                    }
+
+                    if (lower.includes('delete') || lower.includes('remove')) {
+                        return `To delete a task, hover over it and click the 🗑️ button that appears. Be careful - this action cannot be undone! ⚠️`;
+                    }
+
+                    if (lower.includes('complete') || lower.includes('done') || lower.includes('finish')) {
+                        return `Click the checkbox next to any task to mark it as completed. Great job staying on top of things! ✅`;
+                    }
+
+                    // Calendar help
+                    if (lower.includes('calendar') || lower.includes('date') || lower.includes('schedule')) {
+                        return `Use the calendar in the sidebar to view tasks by date. Click on any date to see tasks due that day! 📅`;
+                    }
+
+                    // Settings
+                    if (lower.includes('settings') || lower.includes('preferences')) {
+                        return `Click the ⚙️ Settings button in the header to access your account settings and view task statistics! ⚙️`;
+                    }
+
+                    // Weather queries
+                    if (lower.includes('weather') || lower.includes('temperature') || lower.includes('outside')) {
+                        const weatherWidget = document.getElementById('weather-widget');
+                        if (weatherWidget) {
+                            const temp = weatherWidget.querySelector('.weather-temp')?.textContent || '--°C';
+                            const desc = weatherWidget.querySelector('.weather-desc')?.textContent || 'unknown';
+                            const location = weatherWidget.querySelector('.weather-location')?.textContent || 'your location';
+
+                            return `The weather in ${location} is ${desc} with a temperature of ${temp}. Check the weather widget in the sidebar for more details! 🌤️`;
+                        }
+                        return `I can see the weather information in your sidebar! It shows current conditions for your location. ☀️`;
+                    }
+
+                    // Default responses
+                    const defaultResponses = [
+                        `I'm here to help you stay productive, ${currentUser.name}! Ask me about your tasks, progress, or productivity tips. 🤖`,
+                        `How can I assist you today? I can help with task management, productivity advice, or answer questions about your account! 💡`,
+                        `I'm your productivity companion! Try asking about your tasks, progress, or for some motivation. 🚀`,
+                        `What would you like to know? I can tell you about your tasks, give productivity tips, or help with planning! 📝`
+                    ];
+
+                    return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+                }
+
+                function setFilter(filter) {
+                    currentFilter = filter;
+                    selectedDate = null;
+                    document.querySelectorAll('.sidebar-left .nav-item').forEach(el => el.classList.remove('active'));
+                    event.target.closest('.nav-item').classList.add('active');
+                    renderTasks();
+                }
+
+                function setSubFilter(filter) {
+                    subFilter = filter;
+                    document.querySelectorAll('.filters .filter-btn').forEach(el => el.classList.remove('active'));
+                    event.target.classList.add('active');
+                    renderTasks();
+                }
+
+                function selectDate(dateStr) {
+                    selectedDate = dateStr;
+                    currentFilter = 'date';
+                    document.querySelectorAll('.sidebar-left .nav-item').forEach(el => el.classList.remove('active'));
+                    renderCalendar();
+                    renderTasks();
+                }
+
+                function changeMonth(delta) {
+                    // Add fade out animation
+                    const grid = document.getElementById('calendar-grid');
+                    grid.style.opacity = '0';
+                    grid.style.transform = 'scale(0.95)';
+
+                    setTimeout(() => {
+                        currentMonth.setMonth(currentMonth.getMonth() + delta);
+                        renderCalendar();
+
+                        // Add fade in animation
+                        setTimeout(() => {
+                            grid.style.opacity = '1';
+                            grid.style.transform = 'scale(1)';
+                        }, 50);
+                    }, 150);
+                }
+
+                function goToToday() {
+                    const today = new Date();
+                    const todayStr = formatDate(today);
+
+                    // If already on current month, just select today
+                    if (currentMonth.getMonth() === today.getMonth() &&
+                        currentMonth.getFullYear() === today.getFullYear()) {
+                        selectDate(todayStr);
+                        // Add a subtle pulse animation to today's date
+                        setTimeout(() => {
+                            const todayElement = document.querySelector('.calendar-day.today');
+                            if (todayElement) {
+                                todayElement.style.animation = 'pulse 0.6s ease-in-out';
+                                setTimeout(() => {
+                                    todayElement.style.animation = '';
+                                }, 600);
+                            }
+                        }, 100);
+                        return;
+                    }
+
+                    // Navigate to current month with animation
+                    const grid = document.getElementById('calendar-grid');
+                    grid.style.opacity = '0';
+                    grid.style.transform = 'scale(0.95)';
+
+                    setTimeout(() => {
+                        currentMonth = new Date(today.getFullYear(), today.getMonth());
+                        renderCalendar();
+                        selectDate(todayStr);
+
+                        setTimeout(() => {
+                            grid.style.opacity = '1';
+                            grid.style.transform = 'scale(1)';
+
+                            // Pulse today's date
+                            setTimeout(() => {
+                                const todayElement = document.querySelector('.calendar-day.today');
+                                if (todayElement) {
+                                    todayElement.style.animation = 'pulse 0.6s ease-in-out';
+                                }
+                            }, 200);
+                        }, 50);
+                    }, 150);
+                }
+
+                function formatDate(date) {
+                    return date.toISOString().split('T')[0];
+                }
+
+                function isToday(dateStr) {
+                    return new Date(dateStr).toDateString() === new Date().toDateString();
+                }
+
+                function formatDisplayDate(dateStr) {
+                    const date = new Date(dateStr);
+                    const today = formatDate(new Date());
+                    const tomorrow = formatDate(new Date(Date.now() + 86400000));
+
+                    if (dateStr === today) return 'Today';
+                    if (dateStr === tomorrow) return 'Tomorrow';
+                    return `${date.getMonth() + 1}/${date.getDate()}`;
+                }
+
+                function escapeHtml(text) {
+                    const div = document.createElement('div');
+                    div.textContent = text;
+                    return div.innerHTML;
+                }
+
+                // Weather functionality
+                async function fetchWeather() {
+                    try {
+                        // Mock weather data with realistic variations
+                        const weatherConditions = [
+                            { icon: '☀️', description: 'sunny', temp: 25 },
+                            { icon: '⛅', description: 'partly cloudy', temp: 22 },
+                            { icon: '☁️', description: 'cloudy', temp: 18 },
+                            { icon: '🌧️', description: 'light rain', temp: 16 },
+                            { icon: '⛈️', description: 'thunderstorm', temp: 14 },
+                            { icon: '❄️', description: 'snow', temp: 2 },
+                            { icon: '🌤️', description: 'mostly sunny', temp: 23 }
+                        ];
+
+                        const randomCondition = weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
+
+                        // Add some temperature variation
+                        const tempVariation = (Math.random() - 0.5) * 6; // ±3°C variation
+                        const finalTemp = Math.round(randomCondition.temp + tempVariation);
+
+                        updateWeatherWidget({
+                            location: 'New York, NY', // You can make this configurable
+                            temp: finalTemp,
+                            description: randomCondition.description,
+                            humidity: Math.floor(Math.random() * 40) + 40, // 40-80%
+                            windSpeed: Math.floor(Math.random() * 20) + 5, // 5-25 km/h
+                            icon: randomCondition.icon
+                        });
+                    } catch (error) {
+                        console.error('Weather fetch error:', error);
+                        updateWeatherWidget(null);
+                    }
+                }
+
+                function updateWeatherWidget(data) {
+                    const widget = document.getElementById('weather-widget');
+                    if (!widget) return;
+
+                    if (!data) {
+                        // Show error state
+                        widget.innerHTML = `
+                <div class="weather-header">
+                    <div class="weather-icon">❌</div>
+                    <div class="weather-location">Weather unavailable</div>
+                </div>
+                <div class="weather-info">
+                    <div class="weather-desc">Unable to fetch weather data</div>
+                </div>
+            `;
+                        return;
+                    }
+
+                    // Update weather data
+                    widget.querySelector('.weather-icon').textContent = data.icon;
+                    widget.querySelector('.weather-location').textContent = data.location;
+                    widget.querySelector('.weather-temp').textContent = `${data.temp}°C`;
+                    widget.querySelector('.weather-desc').textContent = data.description;
+
+                    const detailValues = widget.querySelectorAll('.detail-value');
+                    detailValues[0].textContent = `${data.humidity}%`;
+                    detailValues[1].textContent = `${data.windSpeed} km/h`;
+                }
+
+                // Initialize weather on page load
+                fetchWeather();
+
+                document.getElementById('task-input').addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') addTask();
+                });
+                document.getElementById('ai-input').addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') sendMessage();
+                });
+            </script>
+</body>
+
+</html>
